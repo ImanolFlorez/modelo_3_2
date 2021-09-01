@@ -1,0 +1,77 @@
+################################################################################
+# Demo: modelo 3.2 (Tono emocional PQR acuacar) en producción
+################################################################################
+# Se requieren los siguientes archivos de entrada:
+# * El archivo con los metadatos
+#   Estos son los campos y nombres de variables que se espera recibir en el archivo
+#   de entrada de metadatos:
+#
+# RadicadoCOD,En_Abox?,RadicadoFecha,ExpedienteCOD,ReclamoID,Poliza,RecepcionVia,
+# MotivoPQR,TipoPQR,MotivoTipoPQR,Area,DESCRIPCION_CORTA,OBSERVACION_01,OBSERVACION_02,
+# OBSERVACION_03,PERIODO_FACTURADO,AÑO_FACTURADO,NUMERO_REGISTRO,FECHA_REGISTRO,
+# FECHA_VENCIMTO,IMPORTE,USUARIO_RECEPCION,FECHA_RECEPCION,HORA_RECEPCION,DPTO_TRANSFERIDO,
+# FECHA_INSPECCION,INSPECCION?,Imperceptible,Estado_ult_novedad,Tipo_Solucion_COD,
+# Fecha_Solucion,Fecha_Notificacion,Fecha_Vencimiento,Fecha_Venc_interno,Registro_Historico,
+# DPTO_SOLUCION,TIPO_SOLUCION,CLAVE_SOLUCION,VIA_SOLUCION,OBSER_SOLUCION_1,OBSER_SOLUCION_2,
+# OBSER_SOLUCION_3,USUARIO_SOLUCION,Archivo,NUMERO,RUTA COMBINADA,RUTA2
+#
+# * El archivo de textos:
+#   Estos son los campos y nombres de variables que se espera recibir en el archivo
+#   de textos:
+#
+# parser   name     text     pages      
+#
+# * El archivo del lexicon de sentimientos (almacenado en la carpeta datos): 
+#   lexicon_español.rds
+#
+# * El archivo de palabras vacías (almacenado en la carpeta datos):
+#   vacias.txt
+#   Este archivo hay que configurarlo para cada cliente
+################################################################################
+# PASOS
+################################################################################
+1. Este paso es necesario siempre 
+
+Rscript -e 'renv::restore()'
+
+################################################################################
+2. Este paso es necesario solo si es la primera vez que el modelo de corre en 
+este computador. Es el paso de entrenar el modelo y obtener las métricas relevantes.
+Por tanto, requiere que en el mismo directorio en donde se encuentra el script
+esten los datos en una carpeta así: 
+"datos/PQR ABOX 2021-03-26-V3-FUNDIDO.xlsx"
+"datos/as400.feather"
+"datos/lexicon_español.rds"
+"datos/vacias.txt"
+
+Rscript modelo_3_2.R
+
+Como resultado se obtendran dos nuevos archivos en la carpeta datos:
+
+- Un archivo con el resultado de la ingestion de textos (todo_textos.rds)
+- Un archivo con el resultado del análisis de componenetes principales (acp.rds)
+
+De estos, en este modelo solo se usa los resultados del análisis de componentes
+principales
+
+################################################################################
+3. Este paso es necesario solo en las pruebas. Los datos de ejemplo son sustituidos
+por nuevos datos 
+
+Rscript generar_datos_ejemplo_3_2.R 1
+
+################################################################################
+4. Este es el comando principal para correr nuevos datos con el modelo que debe
+ser llamado desde el servicio
+
+Rscript modelo_servido_3_2.R <archivo csv metadatos nuevos datos> 
+<archivo feather nuevos textos> <archivo csv resultados> <archivo lexicon> <archivo_vacias> 
+
+De estos el archivo de lexicon y el archivo de vacías se presumen almacenados en la carpeta
+datos del directorio desde donde se llama el script 
+
+Ejemplo:
+
+Rscript modelo_servido_3_2.R muestra_3_2.csv datos/as400.feather resultado_mod_3_2.csv lexicon_español.rds vacias.txt
+
+################################################################################
